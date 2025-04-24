@@ -1718,7 +1718,7 @@ int start_wifi_ctrl(wifi_ctrl_t *ctrl)
 
     if (monitor_ret == 0) {
         //Start Wifi Monitor Thread
-        start_wifi_health_monitor_thread();
+        // start_wifi_health_monitor_thread();
     } else {
         wifi_util_error_print(WIFI_CTRL,"%s:%d Failed to start Wifi Monitor\n", __func__, __LINE__);
     }

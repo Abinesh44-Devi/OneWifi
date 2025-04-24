@@ -315,10 +315,17 @@ int init_wifimgr()
     return 0;
 }
 
+void init_wifi_db_param(void)
+{
+    init_wifidb_data();
+
+    /* Set Wifi Global Parameters */
+    init_wifi_global_config();
+}
+
 int start_wifimgr()
 {
-    get_wifidml_obj()->desc.start_dml_fn();
-
+    init_wifi_db_param();
     wifi_ctrl_t *ctrl =  NULL;
     int WIFI_APPS_NUM;
     wifi_app_descriptor_t *app_desc = get_app_desc(&WIFI_APPS_NUM);
