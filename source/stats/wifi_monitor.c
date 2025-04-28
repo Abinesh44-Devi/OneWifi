@@ -1382,6 +1382,7 @@ void clear_sta_counters(unsigned int vap_index)
     pthread_mutex_unlock(&mon_data->data_lock);
 }
 
+#if !defined (_PP203X_PRODUCT_REQ_)
 static void update_subscribe_data(wifi_monitor_data_t *event)
 {
     hash_map_t *collector_list = NULL;
@@ -1467,6 +1468,7 @@ static void update_subscribe_data(wifi_monitor_data_t *event)
         free(tmp_clctr_subscription);
     }
 }
+#endif
 
 void *monitor_function  (void *data)
 {
@@ -1563,7 +1565,9 @@ void *monitor_function  (void *data)
                         scheduler_telemetry_tasks();
                     break;
                     case wifi_event_monitor_data_collection_config:
+                    #if !defined (_PP203X_PRODUCT_REQ_)
                         coordinator_check_stats_config(&event_data->u.mon_stats_config);
+                    #endif
                     break;
                     case wifi_event_monitor_started_active_msmt:
                         g_monitor_module.is_blaster_running = true;
@@ -1575,8 +1579,10 @@ void *monitor_function  (void *data)
                         clear_sta_counters(event_data->ap_index);
                     break;
                     case wifi_event_monitor_set_subscribe:
+                    #if !defined (_PP203X_PRODUCT_REQ_)
                         update_subscribe_data(event_data);
                        // subscribe_stats = event_data->u.collect_stats.event_subscribe;
+                    #endif
                     break;
                     default:
                     break;
@@ -3635,6 +3641,7 @@ wifi_mon_collector_element_t * coordinator_create_collector_elem(wifi_mon_stats_
     return collector_elem;
 }
 
+#if !defined (_PP203X_PRODUCT_REQ_)
 wifi_mon_provider_element_t  *coordinator_create_provider_elem(wifi_mon_stats_config_t * stats_config, wifi_mon_stats_descriptor_t *stat_desc)
 {
     wifi_mon_provider_element_t *provider_elem = NULL;
@@ -3676,6 +3683,7 @@ wifi_mon_provider_element_t  *coordinator_create_provider_elem(wifi_mon_stats_co
 
     return provider_elem;
 }
+#endif
 
 void coordinator_free_provider_elem(wifi_mon_provider_element_t **provider_elem)
 {
@@ -3711,6 +3719,7 @@ void coordinator_free_collector_elem(wifi_mon_collector_element_t **collector_el
     return;
 }
 
+#if !defined (_PP203X_PRODUCT_REQ_)
 int coordinator_create_task(wifi_mon_collector_element_t **collector_elem, wifi_mon_stats_config_t *stats_config, wifi_mon_stats_descriptor_t *stat_desc)
 {
     if (collector_elem == NULL || stats_config == NULL || stat_desc == NULL) {
@@ -3768,6 +3777,7 @@ int coordinator_create_task(wifi_mon_collector_element_t **collector_elem, wifi_
 
     return RETURN_OK;
 }
+#endif
 
 int collector_task_update(wifi_mon_collector_element_t *collector_elem, unsigned long *new_collector_interval)
 {
@@ -3797,6 +3807,7 @@ int provider_task_update(wifi_mon_provider_element_t *provider_elem, unsigned lo
     return RETURN_OK;
 }
 
+#if !defined (_PP203X_PRODUCT_REQ_)
 int coordinator_update_task(wifi_mon_collector_element_t *collector_elem, wifi_mon_stats_config_t *stats_config)
 {
     if (collector_elem == NULL || collector_elem->stat_desc == NULL || collector_elem->provider_list == NULL || stats_config == NULL) {
@@ -3849,7 +3860,7 @@ int coordinator_update_task(wifi_mon_collector_element_t *collector_elem, wifi_m
 
     return RETURN_OK;
 }
-
+#endif
 
 int coordinator_stop_task(wifi_mon_collector_element_t **collector_elem, wifi_mon_stats_config_t *stats_config)
 {
@@ -3906,6 +3917,13 @@ int coordinator_stop_task(wifi_mon_collector_element_t **collector_elem, wifi_mo
     return RETURN_OK;
 }
 
+// Stub for stats_common_args_validation function
+int stats_common_args_validation(wifi_mon_stats_config_t *mon_stats_config)
+{
+    return RETURN_OK;
+}
+
+#if !defined (_PP203X_PRODUCT_REQ_)
 int coordinator_check_stats_config(wifi_mon_stats_config_t *mon_stats_config)
 {
     hash_map_t *collector_list = NULL;
@@ -3996,6 +4014,7 @@ int coordinator_check_stats_config(wifi_mon_stats_config_t *mon_stats_config)
 
     return RETURN_OK;
 }
+#endif
 
 wifi_apps_coordinator_t *get_apps_coordinator()
 {

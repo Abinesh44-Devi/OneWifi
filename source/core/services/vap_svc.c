@@ -48,11 +48,13 @@ int svc_init(vap_svc_t *svc, vap_svc_type_t type)
             break;
 
         case vap_svc_type_public:
+        #if !defined (_PP203X_PRODUCT_REQ_)
             svc->start_fn = vap_svc_public_start;
             svc->stop_fn = vap_svc_public_stop;
             svc->update_fn = vap_svc_public_update;
             svc->event_fn = vap_svc_public_event;
             svc->is_my_fn = vap_svc_is_public;
+        #endif
             break;
 
         case vap_svc_type_mesh_gw:

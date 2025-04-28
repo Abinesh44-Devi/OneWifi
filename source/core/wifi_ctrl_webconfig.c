@@ -848,7 +848,7 @@ int webconfig_hal_vap_apply_by_name(wifi_ctrl_t *ctrl, webconfig_subdoc_decoded_
             memset(update_status, 0, sizeof(update_status));
             snprintf(update_status, sizeof(update_status), "%s %s", vap_names[i], (ret == RETURN_OK)?"success":"fail");
             apps_mgr_analytics_event(&ctrl->apps_mgr, wifi_event_type_webconfig, wifi_event_webconfig_hal_result, update_status);
-            if (vap_svc_is_public(tgt_vap_index)) {
+            /*if (vap_svc_is_public(tgt_vap_index)) {
                 wifi_util_dbg_print(WIFI_CTRL,"vapname is %s and %d \n",vap_info->vap_name,vap_info->u.bss_info.enabled);
                 if (svc->event_fn != NULL) {
                     snprintf(pub.vap_name,sizeof(pub.vap_name),"%s",vap_info->vap_name);
@@ -856,7 +856,7 @@ int webconfig_hal_vap_apply_by_name(wifi_ctrl_t *ctrl, webconfig_subdoc_decoded_
                     svc->event_fn(svc, wifi_event_type_command, wifi_event_type_xfinity_enable,
                        vap_svc_event_none, &pub);
                 }
-            }
+            }*/
             /* XXX: This memcpy should be deleted later. Mgr's cache should be
              * updated only from WifiDb callbacks (see update_fn).
              *

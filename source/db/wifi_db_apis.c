@@ -5877,6 +5877,7 @@ int wifidb_update_wifi_security_config(char *vap_name, wifi_vap_security_t *sec)
     }
     else
     {
+#if ONEWIFI_DML_SUPPORT
         wifidb_print("%s:%d Updated WIFI DB. Wifi Security Config table updated successful. \n",__func__, __LINE__);
 #ifndef NEWPLATFORM_PORT
         wifidml_desc_t *p_desc = &get_wifidml_obj()->desc;
@@ -5884,6 +5885,7 @@ int wifidb_update_wifi_security_config(char *vap_name, wifi_vap_security_t *sec)
         strncpy(psm_security_cfg.mfp, cfg_sec.mfp_config, sizeof(psm_security_cfg.mfp)-1);
         p_desc->push_data_to_ssp_queue_fn(&psm_security_cfg, sizeof(wifi_security_psm_param_t), ssp_event_type_psm_write, security_config);
 #endif // NEWPLATFORM_PORT
+#endif
     }
     return RETURN_OK;
 }
@@ -7074,8 +7076,10 @@ void init_wifidb_data()
     wifi_vap_info_map_t *l_vap_param_cfg = NULL;
     wifi_radio_operationParam_t *l_radio_cfg = NULL;
     wifi_radio_feature_param_t *f_radio_cfg = NULL;
+    #if ONEWIFI_DML_SUPPORT
     wifi_rfc_dml_parameters_t *rfc_param = get_wifi_db_rfc_parameters();
     char country_code[COUNTRY_CODE_LEN] = {0};
+    #endif
 
     wifi_util_info_print(WIFI_DB,"%s:%d No of radios %d\n",__func__, __LINE__,getNumberRadios());
 
@@ -7086,6 +7090,7 @@ void init_wifidb_data()
     }
     wifidb_init_default_value();
 
+#if ONEWIFI_DML_SUPPORT
     if ((access(ONEWIFI_FR_REBOOT_FLAG, F_OK) == 0) && (access(ONEWIFI_FR_WIFIDB_RESET_DONE_FLAG, F_OK) != 0)) {
         wifidb_update_rfc_config(0, rfc_param);
         get_wifi_country_code_from_bootstrap_json(country_code, COUNTRY_CODE_LEN);
@@ -7156,6 +7161,7 @@ void init_wifidb_data()
         wifidb_update_rfc_config(0, rfc_param);
 #endif
         get_wifi_country_code_from_bootstrap_json(country_code, COUNTRY_CODE_LEN);
+#endif
         pthread_mutex_lock(&g_wifidb->data_cache_lock);
         for (r_index = 0; r_index < num_radio; r_index++) {
             l_vap_param_cfg = get_wifidb_vap_map(r_index);
@@ -7189,7 +7195,7 @@ void init_wifidb_data()
             }
 
             wifidb_vap_config_correction(l_vap_param_cfg);
-
+#if ONEWIFI_DML_SUPPORT
             if (country_code[0] != 0) {
                 char radio_country_code[COUNTRY_CODE_LEN] = {0};
                 wifi_countrycode_type_t r_country_code;
@@ -7203,6 +7209,7 @@ void init_wifidb_data()
                     }
                 }
             }
+#endif
             wifidb_radio_config_upgrade(r_index, l_radio_cfg, f_radio_cfg);
             wifidb_vap_config_upgrade(l_vap_param_cfg, l_rdk_vap_param_cfg);
             if (l_radio_cfg->EcoPowerDown == false) {
@@ -7236,6 +7243,7 @@ void init_wifidb_data()
         wifidb_get_wifi_macfilter_config();
         wifidb_get_wifi_global_config(&g_wifidb->global_config.global_parameters);
         wifidb_get_gas_config(g_wifidb->global_config.gas_config.AdvertisementID,&g_wifidb->global_config.gas_config);
+#if ONEWIFI_DML_SUPPORT
         if (country_code[0] != 0) {
             if (strcmp(country_code, g_wifidb->global_config.global_parameters.wifi_region_code) != 0) {
                 strncpy(g_wifidb->global_config.global_parameters.wifi_region_code, country_code, sizeof(g_wifidb->global_config.global_parameters.wifi_region_code));
@@ -7247,8 +7255,11 @@ void init_wifidb_data()
             pthread_mutex_unlock(&g_wifidb->data_cache_lock);
             return;
         }
+#endif
         pthread_mutex_unlock(&g_wifidb->data_cache_lock);
+#if ONEWIFI_DML_SUPPORT
     }
+#endif
 
     wifi_util_info_print(WIFI_DB,"%s:%d Wifi data init complete\n",__func__, __LINE__);
     db_param_init = true;
@@ -7751,6 +7762,7 @@ int get_total_mac_list_from_psm(int instance_number, unsigned int *total_entries
     return RETURN_ERR;
 }
 
+#if !defined(NEWPLATFORM_PORT) || !defined(_PP203X_PRODUCT_REQ_)
 void get_radio_params_from_psm(unsigned int radio_index, wifi_radio_operationParam_t *radio_cfg, wifi_radio_feature_param_t *radio_feat_cfg)
 {
     char *str = NULL;
@@ -7982,6 +7994,7 @@ void get_radio_params_from_psm(unsigned int radio_index, wifi_radio_operationPar
 
     wifi_util_info_print(WIFI_MGR,"radio_cfg->enable:%d for radio index:%d\n", radio_cfg->enable, radio_index);
 }
+#endif // !defined (_PP203X_PRODUCT_REQ_)
 
 void get_radio_params_from_db(unsigned int radio_index,wifi_radio_operationParam_t *radio_cfg)
 {
@@ -8080,6 +8093,7 @@ void get_psm_mac_list_entry(unsigned int instance_number, char *l_vap_name, unsi
     }
 }
 
+#if !defined (NEWPLATFORM_PORT) || !defined (_PP203X_PRODUCT_REQ_)
 int get_vap_params_from_psm(unsigned int vap_index, wifi_vap_info_t *vap_config,
     rdk_wifi_vap_info_t *rdk_vap_config)
 {
@@ -8332,6 +8346,7 @@ int get_vap_params_from_psm(unsigned int vap_index, wifi_vap_info_t *vap_config,
 
     return RETURN_OK;
 }
+#endif
 
 int wifi_db_update_radio_config()
 {
@@ -8345,7 +8360,7 @@ int wifi_db_update_radio_config()
         memset(&radio_feat_cfg, 0, sizeof(wifi_radio_feature_param_t));
 
         /* read values from psm and update db */
-#ifndef NEWPLATFORM_PORT
+#if !defined (NEWPLATFORM_PORT) || !defined (_PP203X_PRODUCT_REQ_)
         get_radio_params_from_psm(radio_index, &radio_cfg, &radio_feat_cfg);
 #endif // NEWPLATFORM_PORT
         get_radio_params_from_db(radio_index, &radio_cfg);
@@ -8620,4 +8635,4 @@ int get_all_param_from_psm_and_set_into_db(void)
     wifi_util_info_print(WIFI_MGR, "%s Done\n", __func__);
     return RETURN_OK;
 }
-#endif //ONEWIFI_DB_SUPPORT
+#endif //ONEWIFI_DB_SUPPORT 

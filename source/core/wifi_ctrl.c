@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <sys/types.h>
 #include "wifi_stubs.h"
 #include "wifi_hal.h"
 #include "wifi_hal_rdk_framework.h"
@@ -332,9 +333,11 @@ void ctrl_queue_loop(wifi_ctrl_t *ctrl)
                         handle_command_event(ctrl, event->u.core_data.msg, event->u.core_data.len, event->sub_type);
                         break;
 
+                    #if !defined (_PP203X_PRODUCT_REQ_)
                     case wifi_event_type_wifiapi:
                         handle_wifiapi_event(event->u.core_data.msg, event->u.core_data.len, event->sub_type);
                         break;
+                    #endif
 
                     case wifi_event_type_monitor:
                         handle_monitor_event(ctrl, event->u.core_data.msg, event->u.core_data.len, event->sub_type);
@@ -390,11 +393,12 @@ int init_wifi_global_config(void)
         wifi_util_info_print(WIFI_CTRL, "%s:%d wifi global params already initialized\r\n",__func__, __LINE__);
         return RETURN_OK;
     }
+#ifdef ONEWIFI_SYSEVENT_SUPPORT
     if (RETURN_OK != get_misc_descriptor()->WiFi_InitGasConfig_fn()) {
         wifi_util_error_print(WIFI_CTRL,"RDK_LOG_WARN, RDKB_SYSTEM_BOOT_UP_LOG : CosaWifiInitialize - WiFi failed to Initialize GAS Configuration.\n");
         return RETURN_ERR;
     }
-
+#endif
     wifi_global_param_init = true;
     return RETURN_OK;
 }
@@ -451,7 +455,7 @@ int start_radios(rdk_dev_mode_type_t mode)
     if (keep_out_json != NULL)
     { 
         wifi_util_dbg_print(WIFI_CTRL,"%s:%d ACS KeepOut json_schema at boot up time = %s\n",__FUNCTION__,__LINE__,(char*)keep_out_json);
-        process_acs_keep_out_channels_event((char*)keep_out_json);
+        //process_acs_keep_out_channels_event((char*)keep_out_json);
     }
 
     for (index = 0; index < num_of_radios; index++) {

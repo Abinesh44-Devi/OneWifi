@@ -96,9 +96,9 @@ int remove_xfinity_acl_entries(bool remove_all_greylist_entry,bool prefer_privat
         wifi_vap_map = get_wifidb_vap_map(itr);
         for (itrj = 0; itrj < getMaxNumberVAPsPerRadio(itr); itrj++) {
             vap_index = wifi_vap_map->vap_array[itrj].vap_index;
-            if ((vap_svc_is_public(vap_index) == false)) {
+            /*if ((vap_svc_is_public(vap_index) == false)) {
                 continue;
-            }
+            }*/
 
             l_rdk_vap_array = get_wifidb_rdk_vap_info(vap_index);
 
@@ -2903,6 +2903,7 @@ int get_neighbor_scan_results(void *arg)
     return TIMER_TASK_COMPLETE;
 }
 
+#if !defined (_PP203X_PRODUCT_REQ_)
 void process_acs_keep_out_channels_event(const char* json_data)
 {
     unsigned int numOfRadios = getNumberRadios();
@@ -2929,6 +2930,7 @@ void process_acs_keep_out_channels_event(const char* json_data)
         }
     }
 }
+#endif
 
 void process_neighbor_scan_command_event()
 {
@@ -3098,6 +3100,7 @@ static void process_monitor_init_command(void)
     free(data);
 }
 
+#if !defined (_PP203X_PRODUCT_REQ_)
 void process_send_action_frame_command(void *data, unsigned int len)
 {
     action_frame_params_t *params;
@@ -3127,6 +3130,7 @@ void process_send_action_frame_command(void *data, unsigned int len)
 
     return;
 }
+#endif
 
 void process_rsn_override_rfc(bool type)
 {
@@ -3325,9 +3329,11 @@ void handle_command_event(wifi_ctrl_t *ctrl, void *data, unsigned int len,
     case wifi_event_type_notify_monitor_done:
         process_monitor_init_command();
         break;
+#if !defined (_PP203X_PRODUCT_REQ_)
     case wifi_event_type_send_action_frame:
         process_send_action_frame_command(data, len);
         break;
+#endif
     case wifi_event_type_rsn_override_rfc:
         process_rsn_override_rfc(*(bool *)data);
         break;
@@ -3347,8 +3353,10 @@ void handle_command_event(wifi_ctrl_t *ctrl, void *data, unsigned int len,
             __FUNCTION__, wifi_event_subtype_to_string(subtype));
         break;
     }
-
+    
+#if ONEWIFI_ANALYTICS_APP_SUPPORT
     apps_mgr_analytics_event(&ctrl->apps_mgr, wifi_event_type_command, subtype, data);
+#endif
 }
 
 void handle_hal_indication(wifi_ctrl_t *ctrl, void *data, unsigned int len,
@@ -3569,9 +3577,11 @@ void handle_webconfig_event(wifi_ctrl_t *ctrl, const char *raw, unsigned int len
         ctrl->webconfig_state |= ctrl_webconfig_state_trigger_dml_thread_data_update_pending;
         break;
     
+    #if !defined (_PP203X_PRODUCT_REQ_)
     case wifi_event_webconfig_data_to_hal_apply: //Re-factor this for Phase 2
         process_acs_keep_out_channels_event(raw);
         break;
+    #endif
 
     default:
         wifi_util_error_print(WIFI_CTRL,
@@ -3581,6 +3591,7 @@ void handle_webconfig_event(wifi_ctrl_t *ctrl, const char *raw, unsigned int len
     }
 }
 
+#if !defined (_PP203X_PRODUCT_REQ_)
 void handle_wifiapi_event(void *data, unsigned int len, wifi_event_subtype_t subtype)
 {
     switch (subtype) {
@@ -3595,6 +3606,7 @@ void handle_wifiapi_event(void *data, unsigned int len, wifi_event_subtype_t sub
         break;
     }
 }
+#endif
 
 void handle_monitor_event(wifi_ctrl_t *ctrl, void *data, unsigned int len, wifi_event_subtype_t subtype)
 {

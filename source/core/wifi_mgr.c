@@ -33,7 +33,9 @@
 #include <stdlib.h>
 #include "wifi_util.h"
 #ifdef __GLIBC__
+#ifdef ONEWIFI_SYSEVENT_SUPPORT 
 #include <execinfo.h>
+#endif
 #endif
 #include "util.h"
 #include "misc.h"
@@ -255,9 +257,11 @@ int init_wifimgr()
     for (itr=0; itr < (int)getNumberRadios(); itr++) {
         init_global_radio_config(&g_wifi_mgr.radio_config[itr], itr);
     }
-
+    
+    #ifdef ONEWIFI_DML_SUPPORT
     /* Initialize DML initial data */
     get_wifidml_obj()->desc.set_dml_init_status_fn(false);
+    #endif
 
     sprintf(db_file, "%s/rdkb-wifi.db", WIFIDB_DIR);
     if (stat(db_file, &sb) != 0) {
@@ -300,8 +304,10 @@ int init_wifimgr()
 
     wifidb_init(get_wifidb_obj());
 
+    #ifdef ONEWIFI_DML_SUPPORT
     /* Initialize SSP loop */
     get_wifidml_obj()->desc.ssp_init_fn();
+    #endif
 
     //Start Wifi DB server, and Initialize data Cache
     get_wifidb_obj()->desc.init_fn();
