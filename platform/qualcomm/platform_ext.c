@@ -1618,6 +1618,7 @@ INT platform_set_radio_mld_bonding(wifi_radio_info_t *radio)
     return RETURN_OK;
 }
 
+#if defined(VNTXER5_PORT)
 INT platform_create_interface_attributes(struct nl_msg **msg_ptr, wifi_radio_info_t *radio, wifi_vap_info_t *vap)
 {
     char mld_mac_addr[ETH_ALEN];
@@ -1637,6 +1638,7 @@ INT platform_create_interface_attributes(struct nl_msg **msg_ptr, wifi_radio_inf
     }
     return RETURN_OK;
 }
+#endif
 
 INT wifi_sendActionFrameExt(INT apIndex, mac_address_t MacAddr, UINT frequency, UINT wait, UCHAR *frame, UINT len)
 {
